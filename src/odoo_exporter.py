@@ -45,6 +45,7 @@ _ODOO_IMPORT_HEADER = [
     "Método de entrega",
     "Proveedor",
     "Está publicado",
+    "Producto de envío",
     "Reglas de precios/Variable",
     "Reglas de precios/Operador",
     "Reglas de precios/Valor máximo",
@@ -216,11 +217,12 @@ def generar_odoo_csv(
                     zone["name"],
                     zone["provider"],
                     zone["published"],
+                    zone["name"],  # Producto de envío = mismo nombre que el carrier
                 ]
                 cp_col = cps_joined
             else:
                 # Continuation rows: empty carrier + rule + empty CP
-                carrier_cols = ["", "", "", ""]
+                carrier_cols = ["", "", "", "", ""]
                 cp_col = ""
 
             output_rows.append(carrier_cols + list(rule) + [cp_col])

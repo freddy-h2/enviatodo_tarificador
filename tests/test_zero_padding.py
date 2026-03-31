@@ -27,7 +27,7 @@ ODOO_TEMPLATE = os.path.join(
 )
 
 # Column index for CP in the Odoo import format
-_COL_CP = 10  # "Prefijos de C.P."
+_COL_CP = 11  # "Prefijos de C.P."
 
 
 # ---------------------------------------------------------------------------
@@ -538,7 +538,7 @@ class TestOdooExporterImportFormat:
                 current_zone = None
                 for row in reader:
                     nombre = row[1].strip()
-                    variable = row[4].strip() if len(row) > 4 else ""
+                    variable = row[5].strip() if len(row) > 5 else ""
 
                     if "Zona" in nombre:
                         current_zone = nombre
@@ -608,10 +608,10 @@ class TestOdooExporterImportFormat:
                 row2 = next(reader)  # Zona A, tier 2
 
             # Tier 1: weight <= 20, price = 100.00
-            assert row1[6] == "20.00"
-            assert row1[7] == "100.00"
+            assert row1[7] == "20.00"
+            assert row1[8] == "100.00"
             # Tier 2: weight <= 40, price = 200.00
-            assert row2[6] == "40.00"
-            assert row2[7] == "200.00"
+            assert row2[7] == "40.00"
+            assert row2[8] == "200.00"
         finally:
             os.unlink(tmp_path)
