@@ -7,9 +7,13 @@ Verifica que todos los CPs en el pipeline se escriben con exactamente
 
 import csv
 import os
+import sys
 import tempfile
 
 import pytest
+
+# Increase CSV field size limit for compact format (25k+ CPs in one cell)
+csv.field_size_limit(sys.maxsize)
 
 
 # ---------------------------------------------------------------------------
@@ -37,7 +41,7 @@ class TestCSVFuentePadding:
             for i, row in enumerate(reader):
                 cp = row.get("d_codigo", "").strip()
                 if cp and cp.isdigit() and len(cp) != 5:
-                    short_cps.append((i + 2, cp))  # +2 for header + 0-index
+                    short_cps.append((i + 2, cp))
                     if len(short_cps) >= 10:
                         break
 
@@ -92,6 +96,28 @@ class TestCSVFuentePadding:
 # ---------------------------------------------------------------------------
 
 
+def _extract_cps_from_odoo_csv(csv_path: str) -> list:
+    """Extract all individual CPs from an Odoo delivery carrier CSV.
+
+    In the compact format, CPs are comma-separated in a single cell
+    per zone (column "Prefijos de C.P.").
+
+    Returns:
+        list[str]: All individual CP strings found.
+    """
+    all_cps = []
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            cell = row.get("Prefijos de C.P.", "").strip()
+            if cell:
+                for cp in cell.split(","):
+                    cp = cp.strip()
+                    if cp:
+                        all_cps.append(cp)
+    return all_cps
+
+
 class TestOdooTemplatePadding:
     """Verifica que la plantilla Odoo tiene CPs con zero-padding correcto."""
 
@@ -100,19 +126,45 @@ class TestOdooTemplatePadding:
         if not os.path.exists(ODOO_TEMPLATE):
             pytest.skip("Plantilla Odoo no encontrada: %s" % ODOO_TEMPLATE)
 
+        all_cps = _extract_cps_from_odoo_csv(ODOO_TEMPLATE)
+        assert len(all_cps) > 0, "No se encontraron CPs en la plantilla Odoo"
+
+        short_cps = [cp for cp in all_cps if cp.isdigit() and len(cp) != 5]
+        assert not short_cps, (
+            "CPs con menos de 5 dígitos en plantilla Odoo (%d encontrados): %s"
+            % (len(short_cps), short_cps[:10])
+        )
+
+    def test_odoo_template_cps_are_comma_separated(self):
+        """Los CPs están en formato compacto (separados por coma en una celda)."""
+        if not os.path.exists(ODOO_TEMPLATE):
+            pytest.skip("Plantilla Odoo no encontrada: %s" % ODOO_TEMPLATE)
+
         with open(ODOO_TEMPLATE, newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
-            short_cps = []
-            for i, row in enumerate(reader):
-                cp = row.get("Prefijos de C.P.", "").strip()
-                if cp and cp.isdigit() and len(cp) != 5:
-                    short_cps.append((i + 2, cp))
-                    if len(short_cps) >= 10:
-                        break
+            zones_with_cps = 0
+            for row in reader:
+                cell = row.get("Prefijos de C.P.", "").strip()
+                if cell and "," in cell:
+                    zones_with_cps += 1
 
-        assert not short_cps, (
-            "CPs con menos de 5 dígitos en plantilla Odoo (primeros %d): %s"
-            % (len(short_cps), short_cps)
+        assert zones_with_cps == 3, (
+            "Se esperaban 3 zonas con CPs separados por coma, encontradas: %d"
+            % zones_with_cps
+        )
+
+    def test_odoo_template_has_compact_format(self):
+        """La plantilla tiene formato compacto (< 50 filas, no miles)."""
+        if not os.path.exists(ODOO_TEMPLATE):
+            pytest.skip("Plantilla Odoo no encontrada: %s" % ODOO_TEMPLATE)
+
+        with open(ODOO_TEMPLATE, newline="", encoding="utf-8") as f:
+            total_rows = sum(1 for _ in f)
+
+        # 1 header + 3 zonas × (1 header + 11 reglas) = 37 filas
+        assert total_rows <= 50, (
+            "Plantilla tiene %d filas — debería ser formato compacto (< 50)"
+            % total_rows
         )
 
 
@@ -426,7 +478,7 @@ class TestFixCpPaddingScript:
 
 
 class TestOdooExporterPadding:
-    """Verifica que el exportador Odoo preserva CPs con zero-padding."""
+    """Verifica que el exportador Odoo produce CPs con zero-padding correcto."""
 
     def test_odoo_export_preserves_padded_cps(self):
         """Los CPs de la plantilla Odoo se copian con padding intacto."""
@@ -447,20 +499,81 @@ class TestOdooExporterPadding:
         try:
             generar_odoo_csv(precios, ODOO_TEMPLATE, tmp_path)
 
-            # Read output and check all CPs
-            with open(tmp_path, newline="", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                short_cps = []
-                for i, row in enumerate(reader):
-                    cp = row.get("Prefijos de C.P.", "").strip()
-                    if cp and cp.isdigit() and len(cp) != 5:
-                        short_cps.append((i + 2, cp))
-                        if len(short_cps) >= 10:
-                            break
+            # Extract all CPs from the output (compact format)
+            all_cps = _extract_cps_from_odoo_csv(tmp_path)
+            assert len(all_cps) > 0, "No se encontraron CPs en la exportación"
 
+            short_cps = [cp for cp in all_cps if cp.isdigit() and len(cp) != 5]
             assert not short_cps, (
-                "CPs con menos de 5 dígitos en exportación Odoo (primeros %d): %s"
-                % (len(short_cps), short_cps)
+                "CPs con menos de 5 dígitos en exportación Odoo (%d): %s"
+                % (len(short_cps), short_cps[:10])
+            )
+        finally:
+            os.unlink(tmp_path)
+
+    def test_odoo_export_compact_format(self):
+        """La exportación Odoo usa formato compacto (CPs separados por coma)."""
+        if not os.path.exists(ODOO_TEMPLATE):
+            pytest.skip("Plantilla Odoo no encontrada: %s" % ODOO_TEMPLATE)
+
+        from src.odoo_exporter import generar_odoo_csv
+
+        precios = {
+            "Zona A": {"precio_base": 137.88, "carrier": "Test", "servicio": "Test"},
+            "Zona B": {"precio_base": 150.00, "carrier": "Test", "servicio": "Test"},
+            "Zona C": {"precio_base": 200.00, "carrier": "Test", "servicio": "Test"},
+        }
+
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False, mode="w") as f:
+            tmp_path = f.name
+
+        try:
+            generar_odoo_csv(precios, ODOO_TEMPLATE, tmp_path)
+
+            with open(tmp_path, newline="", encoding="utf-8") as f:
+                total_rows = sum(1 for _ in f)
+
+            assert total_rows <= 50, (
+                "Exportación tiene %d filas — debería ser formato compacto (< 50)"
+                % total_rows
+            )
+        finally:
+            os.unlink(tmp_path)
+
+    def test_odoo_export_updates_prices(self):
+        """La exportación Odoo actualiza las reglas de precios correctamente."""
+        if not os.path.exists(ODOO_TEMPLATE):
+            pytest.skip("Plantilla Odoo no encontrada: %s" % ODOO_TEMPLATE)
+
+        from src.odoo_exporter import generar_odoo_csv
+
+        precios = {
+            "Zona A": {"precio_base": 100.00, "carrier": "Test", "servicio": "Test"},
+            "Zona B": {"precio_base": 200.00, "carrier": "Test", "servicio": "Test"},
+            "Zona C": {"precio_base": 300.00, "carrier": "Test", "servicio": "Test"},
+        }
+
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False, mode="w") as f:
+            tmp_path = f.name
+
+        try:
+            generar_odoo_csv(precios, ODOO_TEMPLATE, tmp_path)
+
+            with open(tmp_path, newline="", encoding="utf-8") as f:
+                reader = csv.reader(f)
+                next(reader)  # skip header
+                rows = list(reader)
+
+            # Zona A first rule should have price 100.00
+            zona_a_row = rows[0]
+            assert "100,00" in zona_a_row[5], (
+                "Zona A primera regla debería contener 100,00: %s" % zona_a_row[5]
+            )
+
+            # Zona B first rule (row 12) should have price 200.00
+            zona_b_row = rows[12]
+            assert "200,00" in zona_b_row[5], (
+                "Zona B primera regla debería contener 200,00: %s" % zona_b_row[5]
             )
         finally:
             os.unlink(tmp_path)

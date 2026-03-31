@@ -7,6 +7,10 @@ basándose en los datos de cotización del cotizador EnviaTodo.
 
 import csv
 import os
+import sys
+
+# Increase CSV field size limit for compact format (25k+ CPs in one cell)
+csv.field_size_limit(sys.maxsize)
 
 
 # ---------------------------------------------------------------------------
@@ -103,9 +107,16 @@ def generar_odoo_csv(
 ) -> str:
     """Generate an Odoo delivery carrier CSV with updated prices.
 
-    Reads the Odoo delivery carrier template CSV and produces a new version
-    with price rules recalculated from the provided zone prices.  All CP
-    prefix rows are copied verbatim from the template.
+    Reads the Odoo delivery carrier template CSV (compact format: all CP
+    prefixes comma-separated in a single cell) and produces a new version
+    with price rules recalculated from the provided zone prices.
+
+    The compact format expected by Odoo is::
+
+        "Secuencia","Método de entrega",...,"Reglas de precios","Prefijos de C.P."
+        "10","Envío a domicilio - Zona A",...,"if weight <= ...","01000,01010,..."
+        "","","","","","if weight <= 40.00 ...",""
+        ...
 
     Args:
         precios_por_zona: dict from leer_cotizacion(), e.g.::
@@ -160,19 +171,19 @@ def generar_odoo_csv(
                 current_rules = _generate_price_rules(precio_base)
                 rules_written = 0
 
-                # Build the zone header row: preserve cols 0-4 and 6, replace col 5
+                # Build the zone header row: preserve cols 0-4 and 6,
+                # replace col 5 with first price rule.
+                # Col 6 contains all CP prefixes comma-separated — copy verbatim.
                 new_row = list(row)
                 new_row[_COL_PRICE_RULE] = current_rules[0]
                 rules_written = 1
                 output_rows.append(new_row)
                 continue
 
-            # Inside a zone block: check row type
+            # Inside a zone block: price rule continuation rows
             if current_rules is not None:
                 col5 = row[_COL_PRICE_RULE] if len(row) > _COL_PRICE_RULE else ""
-                col6 = row[_COL_CP_PREFIX] if len(row) > _COL_CP_PREFIX else ""
 
-                # Price rule continuation row: col5 starts with 'if weight', col6 empty
                 if col5.startswith("if weight"):
                     if rules_written < _NUM_PRICE_RULES:
                         new_row = list(row)
@@ -184,12 +195,7 @@ def generar_odoo_csv(
                         output_rows.append(row)
                     continue
 
-                # CP prefix row: col6 non-empty, col5 empty
-                if col6 and not col5:
-                    output_rows.append(row)
-                    continue
-
-            # Any other row (shouldn't normally occur) — copy verbatim
+            # Any other row — copy verbatim
             output_rows.append(row)
 
     # Write output
