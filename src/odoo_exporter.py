@@ -51,7 +51,7 @@ _ODOO_IMPORT_HEADER = [
     "Reglas de precios/Precio de venta base",
     "Reglas de precios/Precio de venta",
     "Reglas de precios/Factor variable",
-    "Prefijos de C.P./Nombre",
+    "Prefijos de C.P.",
 ]
 
 # Columnas vacías para filas de continuación
@@ -166,7 +166,7 @@ def generar_odoo_csv(
         "Reglas de precios/Variable","Reglas de precios/Operador",
         "Reglas de precios/Valor máximo","Reglas de precios/Precio de venta base",
         "Reglas de precios/Precio de venta","Reglas de precios/Factor variable",
-        "Prefijos de C.P./Nombre"
+        "Prefijos de C.P."
 
     Args:
         precios_por_zona: dict from leer_cotizacion(), e.g.::

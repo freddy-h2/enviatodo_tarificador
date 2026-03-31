@@ -27,7 +27,7 @@ ODOO_TEMPLATE = os.path.join(
 )
 
 # Column index for CP in the Odoo import format
-_COL_CP = 10  # "Prefijos de C.P./Nombre"
+_COL_CP = 10  # "Prefijos de C.P."
 
 
 # ---------------------------------------------------------------------------
@@ -39,7 +39,7 @@ def _extract_cps_from_odoo_import_csv(csv_path: str) -> list:
     """Extract all individual CPs from an Odoo import CSV.
 
     In the import format, each CP is on its own row in the
-    "Prefijos de C.P./Nombre" column (index 10).
+    "Prefijos de C.P." column (index 10).
 
     Returns:
         list[str]: All individual CP strings found.
@@ -428,7 +428,7 @@ class TestOdooExporterImportFormat:
             assert "Reglas de precios/Operador" in header
             assert "Reglas de precios/Valor máximo" in header
             assert "Reglas de precios/Precio de venta base" in header
-            assert "Prefijos de C.P./Nombre" in header
+            assert "Prefijos de C.P." in header
         finally:
             os.unlink(tmp_path)
 
