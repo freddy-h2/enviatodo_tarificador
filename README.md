@@ -7,7 +7,11 @@ Cotiza envíos desde un CP de origen hacia el código postal más lejano de cada
 - Python 3.10+
 - `requests`
 
+## Instalación
+
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install requests
 ```
 
@@ -21,17 +25,18 @@ El token de la API de EnviaTodo se lee de (en orden de prioridad):
 ## Uso
 
 ```bash
+# Activar el entorno virtual
+source .venv/bin/activate
+
 # Cotizar desde CP 37000 (León, GTO) — valor por defecto
 python -m src
 
-# Especificar CP de origen como argumento posicional
+# Especificar CP de origen
 python -m src 37000
-
-# Especificar CP de origen con flag --cp
 python -m src --cp 37000
 
-# Usar un token diferente
-ENVIATODO_TOKEN=tu_token python -m src --cp 37000
+# O usar el wrapper (activa el venv automáticamente)
+./run.sh 37000
 ```
 
 ## Salida
@@ -58,13 +63,13 @@ Cada CSV contiene:
 | Paquetería | DHL, ESTAFETA, SENDEX, etc. |
 | Servicio | Nombre del servicio (Terrestre, Aéreo, Día Sig., etc.) |
 | Vía | TERRESTRE o AEREO |
+| Cargo guía | Costo base de la guía |
+| Cargo zona extendida | Sobrecargo por zona remota |
 | Subtotal (MXN) | Precio antes de IVA |
 | IVA (MXN) | Impuesto |
 | Total (MXN) | Precio final con IVA |
-| Cargo zona extendida | Sobrecargo por zona remota |
-| Cargo guía | Costo base de la guía |
-| Entrega estimada | Fecha estimada de entrega |
 | Modo entrega | En domicilio, En sucursal, etc. |
+| Entrega estimada | Fecha estimada de entrega |
 
 ## Datos del producto
 
@@ -86,11 +91,25 @@ Según la ficha técnica (`Ficha tecnica de producto.txt`):
 4. **Cotización** — Llama a `Api/rates_client` con `provider_service_id` específico por cada combinación zona × servicio
 5. **Generación CSV** — Escribe los resultados en `output/cotizacion_YYYYMMDD_HHMMSS.csv`
 
-> **Nota:** La cotización se hace servicio por servicio (no todas las paqueterías a la vez) porque el endpoint `rates_client` sin `provider_service_id` puede causar timeouts.
+### Rate limiting
+
+La API de EnviaTodo permite **120 peticiones por segundo** con un máximo de **500 por sesión**. El cotizador respeta estos límites con:
+
+- **1 segundo** de pausa mínima entre cada petición (`PAUSA_ENTRE_PETICIONES`)
+- **2 segundos** de pausa entre zonas (`PAUSA_ENTRE_ZONAS`)
+- **Reintentos con backoff progresivo** (3s, 6s) cuando la API responde OK pero sin tarifas — esto ocurre por throttling, no por falta de cobertura
+- **Sin reintentos en timeout** — un timeout indica que el servicio no tiene cobertura para esa ruta
+
+Los valores se pueden ajustar en `src/config.py`.
+
+> **Nota:** La cotización se hace servicio por servicio (no todas las paqueterías a la vez) porque el endpoint `rates_client` sin `provider_service_id` causa timeouts.
 
 ## Estructura del proyecto
 
 ```
+├── .venv/                 # Entorno virtual (python3 -m venv .venv)
+├── .env.local             # Token de la API (no commitear)
+├── run.sh                 # Wrapper — activa .venv y ejecuta
 ├── src/
 │   ├── __init__.py        # Paquete
 │   ├── __main__.py        # CLI entry point
@@ -98,9 +117,8 @@ Según la ficha técnica (`Ficha tecnica de producto.txt`):
 │   ├── config.py          # Constantes y configuración
 │   ├── csv_writer.py      # Generación de CSV
 │   └── zonas.py           # Análisis de zonas (CP más lejano)
-├── output/                # CSVs generados (gitignored excepto .gitkeep)
+├── output/                # CSVs generados
 ├── zonas_custerboots/     # Datos de zonas y CPs
 ├── docs_enviatodo/        # Documentación de la API
-├── .env.local             # Token de la API (no commitear)
 └── README.md
 ```

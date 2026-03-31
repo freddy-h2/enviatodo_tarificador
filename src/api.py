@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Cliente de la API de EnviaTodo v2."""
+"""Cliente de la API de EnviaTodo v2.
+
+Rate limiting: la API permite 120 peticiones por segundo, máximo 500
+por sesión. Usamos pausas entre peticiones y backoff progresivo en
+reintentos para evitar respuestas vacías por throttling.
+"""
 
 import time
 
@@ -12,6 +17,9 @@ from src.config import (
     BASE_URL,
     CATALOG_TIMEOUT,
     LARGO,
+    MAX_REINTENTOS,
+    PAUSA_ENTRE_PETICIONES,
+    PAUSA_REINTENTO_BASE,
     PESO,
     PESO_FACTURADO,
     PESO_VOLUMETRICO,
@@ -20,7 +28,11 @@ from src.config import (
 
 
 class EnviaTodoClient:
-    """Wrapper para la API de EnviaTodo v2."""
+    """Wrapper para la API de EnviaTodo v2.
+
+    Respeta el rate limit de la API (120 req/s, máx 500) usando pausas
+    entre peticiones y backoff progresivo en reintentos.
+    """
 
     def __init__(self, token):
         self.token = token
@@ -28,6 +40,15 @@ class EnviaTodoClient:
             **API_HEADERS,
             "Authorization": "Bearer %s" % token,
         }
+        self._ultima_peticion = 0.0
+
+    def _esperar_rate_limit(self):
+        """Espera el tiempo necesario para respetar el rate limit."""
+        ahora = time.monotonic()
+        transcurrido = ahora - self._ultima_peticion
+        if transcurrido < PAUSA_ENTRE_PETICIONES:
+            time.sleep(PAUSA_ENTRE_PETICIONES - transcurrido)
+        self._ultima_peticion = time.monotonic()
 
     # ── Catálogos ─────────────────────────────────────────────
 
@@ -37,6 +58,7 @@ class EnviaTodoClient:
         Returns:
             dict con suburb, municipality, state, city, state_code o None.
         """
+        self._esperar_rate_limit()
         url = BASE_URL + "Api/get_zip_code/" + cp
         try:
             resp = requests.get(url, headers=self.headers, timeout=CATALOG_TIMEOUT)
@@ -60,6 +82,7 @@ class EnviaTodoClient:
         Returns:
             list[dict]: [{provider, provider_id, services: [{id, label, via}]}]
         """
+        self._esperar_rate_limit()
         url = BASE_URL + "Api/provider_services"
         try:
             resp = requests.get(url, headers=self.headers, timeout=CATALOG_TIMEOUT)
@@ -88,20 +111,14 @@ class EnviaTodoClient:
 
     # ── Cotización ────────────────────────────────────────────
 
-    def cotizar(self, cp_origen, cp_destino, datos_origen, datos_destino,
-                provider_service_id):
-        """Cotiza un envío con un servicio específico.
-
-        Args:
-            cp_origen: CP de origen (5 dígitos).
-            cp_destino: CP de destino (5 dígitos).
-            datos_origen: dict con suburb, municipality, state, etc.
-            datos_destino: dict con suburb, municipality, state, etc.
-            provider_service_id: ID del servicio de paquetería.
+    def _cotizar_una_vez(self, cp_origen, cp_destino, datos_origen, datos_destino,
+                         provider_service_id):
+        """Hace una sola petición de cotización.
 
         Returns:
-            dict con la respuesta de la API, o None si falló.
+            tuple: (respuesta_dict_o_None, fue_timeout_bool)
         """
+        self._esperar_rate_limit()
         url = BASE_URL + "Api/rates_client"
 
         payload = {
@@ -176,16 +193,54 @@ class EnviaTodoClient:
                 url, json=payload, headers=self.headers, timeout=REQUEST_TIMEOUT,
             )
             if resp.status_code == 200:
-                return resp.json()
+                return resp.json(), False
+            return None, False
         except requests.exceptions.Timeout:
-            return None
+            return None, True
         except Exception:
-            return None
-        return None
+            return None, False
+
+    def _extraer_resultado(self, rate, svc):
+        """Extrae un dict de resultado a partir de un rate de la API."""
+        cargo_base = next(
+            (c for c in rate.get("charges", []) if c["type"] == "base"),
+            {},
+        )
+        detalles = rate.get("detail_charges", [])
+        zona_ext = next(
+            (d["amount"] for d in detalles
+             if "zona extendida" in d.get("charge_type", "").lower()
+             and d.get("active")),
+            0,
+        )
+        guia = next(
+            (d["amount"] for d in detalles
+             if "guía unitaria" in d.get("charge_type", "").lower()
+             and d.get("active")),
+            0,
+        )
+
+        return {
+            "carrier": svc["provider"],
+            "servicio": rate.get("service_name", svc["label"]),
+            "via": rate.get("via_transport", svc.get("via", "")),
+            "subtotal": cargo_base.get("sub_total", 0),
+            "iva": cargo_base.get("tax", 0),
+            "total": cargo_base.get("total", 0),
+            "zona_ext": zona_ext,
+            "guia": guia,
+            "entrega": rate.get("estimated_date", "—"),
+            "modo": rate.get("delivery_mode", "—"),
+            "disponible": True,
+        }
 
     def cotizar_zona(self, cp_origen, cp_destino, datos_origen, datos_destino,
-                     servicios, pausa=0.5):
+                     servicios, on_progress=None):
         """Cotiza un destino con todos los servicios disponibles.
+
+        Incluye reintentos con backoff progresivo cuando la API devuelve
+        rates vacíos (posible throttling). NO reintenta en caso de timeout
+        (el servicio probablemente no tiene cobertura).
 
         Args:
             cp_origen: CP de origen.
@@ -193,7 +248,7 @@ class EnviaTodoClient:
             datos_origen: dict con datos del CP origen.
             datos_destino: dict con datos del CP destino.
             servicios: list de dicts con id, label, provider.
-            pausa: segundos entre peticiones.
+            on_progress: callback(carrier, servicio, resultado_o_None) para log.
 
         Returns:
             list[dict]: Resultados por servicio.
@@ -201,51 +256,47 @@ class EnviaTodoClient:
         resultados = []
 
         for svc in servicios:
-            resp = self.cotizar(
+            rates = []
+            fue_timeout = False
+
+            # Primer intento
+            resp, fue_timeout = self._cotizar_una_vez(
                 cp_origen, cp_destino, datos_origen, datos_destino, svc["id"],
             )
 
-            rates = []
             if resp and resp.get("success"):
                 rates = resp.get("data", {}).get("rates", [])
 
+            # Reintentar SOLO si la API respondió OK pero con rates vacíos
+            # (posible throttling). Backoff progresivo: 3s, 6s.
+            if not rates and not fue_timeout and resp is not None:
+                for intento in range(1, MAX_REINTENTOS + 1):
+                    pausa = PAUSA_REINTENTO_BASE * intento
+                    if on_progress:
+                        on_progress(
+                            svc["provider"], svc["label"],
+                            "reintento %d/%d (espera %.0fs)" % (
+                                intento, MAX_REINTENTOS, pausa,
+                            ),
+                        )
+                    time.sleep(pausa)
+                    resp, fue_timeout = self._cotizar_una_vez(
+                        cp_origen, cp_destino, datos_origen, datos_destino,
+                        svc["id"],
+                    )
+                    if resp and resp.get("success"):
+                        rates = resp.get("data", {}).get("rates", [])
+                    if rates or fue_timeout:
+                        break
+
             if rates:
                 for rate in rates:
-                    # Extraer cargo base (sin seguro)
-                    cargo_base = next(
-                        (c for c in rate.get("charges", []) if c["type"] == "base"),
-                        {},
-                    )
-                    # Extraer cargos detallados
-                    detalles = rate.get("detail_charges", [])
-                    zona_ext = next(
-                        (d["amount"] for d in detalles
-                         if "zona extendida" in d.get("charge_type", "").lower()
-                         and d.get("active")),
-                        0,
-                    )
-                    guia = next(
-                        (d["amount"] for d in detalles
-                         if "guía unitaria" in d.get("charge_type", "").lower()
-                         and d.get("active")),
-                        0,
-                    )
-
-                    resultados.append({
-                        "carrier": svc["provider"],
-                        "servicio": rate.get("service_name", svc["label"]),
-                        "via": rate.get("via_transport", svc.get("via", "")),
-                        "subtotal": cargo_base.get("sub_total", 0),
-                        "iva": cargo_base.get("tax", 0),
-                        "total": cargo_base.get("total", 0),
-                        "zona_ext": zona_ext,
-                        "guia": guia,
-                        "entrega": rate.get("estimated_date", "—"),
-                        "modo": rate.get("delivery_mode", "—"),
-                        "disponible": True,
-                    })
+                    resultado = self._extraer_resultado(rate, svc)
+                    resultados.append(resultado)
+                    if on_progress:
+                        on_progress(svc["provider"], resultado["servicio"], resultado)
             else:
-                resultados.append({
+                sin_cobertura = {
                     "carrier": svc["provider"],
                     "servicio": svc["label"],
                     "via": svc.get("via", ""),
@@ -257,9 +308,9 @@ class EnviaTodoClient:
                     "entrega": "—",
                     "modo": "Sin cobertura",
                     "disponible": False,
-                })
-
-            if pausa > 0:
-                time.sleep(pausa)
+                }
+                resultados.append(sin_cobertura)
+                if on_progress:
+                    on_progress(svc["provider"], svc["label"], None)
 
         return resultados

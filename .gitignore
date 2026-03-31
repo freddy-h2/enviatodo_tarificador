@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Entorno
+.env
+.env.local
+
+# Output (mantener .gitkeep)
+output/*.csv

@@ -13,8 +13,15 @@ PESO_FACTURADO = max(PESO, PESO_VOLUMETRICO)
 
 # ── API EnviaTodo ─────────────────────────────────────────────
 BASE_URL = "https://apiqav2.enviatodo.mx/index.php/"
-REQUEST_TIMEOUT = 90  # segundos por petición de cotización
-CATALOG_TIMEOUT = 15  # segundos para endpoints de catálogo
+REQUEST_TIMEOUT = 90   # segundos por petición de cotización
+CATALOG_TIMEOUT = 15   # segundos para endpoints de catálogo
+
+# Rate limiting: la API permite 120 req/s, máximo 500 por sesión.
+# Usamos pausas amplias para garantizar respuestas consistentes.
+PAUSA_ENTRE_PETICIONES = 3.0  # segundos entre cada cotización
+PAUSA_ENTRE_ZONAS = 5.0      # segundos entre cada zona
+MAX_REINTENTOS = 3            # reintentos si la API responde OK pero sin rates
+PAUSA_REINTENTO_BASE = 5.0   # segundos base para reintentos (5s, 10s, 15s)
 
 API_HEADERS = {
     "x-api-key": "enviatodo",

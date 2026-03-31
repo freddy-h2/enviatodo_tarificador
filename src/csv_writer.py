@@ -47,9 +47,9 @@ def generar_csv(cp_origen, zonas, resultados):
         w.writerow([
             "Zona", "CP más lejano", "Distancia (km)", "Ubicación",
             "Paquetería", "Servicio", "Vía",
+            "Cargo guía", "Cargo zona extendida",
             "Subtotal (MXN)", "IVA (MXN)", "Total (MXN)",
-            "Cargo zona extendida", "Cargo guía",
-            "Entrega estimada", "Modo entrega",
+            "Modo entrega", "Entrega estimada",
         ])
 
         for zona_key in ["Zona A", "Zona B", "Zona C"]:
@@ -72,12 +72,12 @@ def generar_csv(cp_origen, zonas, resultados):
                         dist if i == 0 else "",
                         ubicacion if i == 0 else "",
                         c["carrier"], c["servicio"], c["via"],
+                        "%.2f" % c["guia"],
+                        "%.2f" % c["zona_ext"],
                         "%.2f" % c["subtotal"],
                         "%.2f" % c["iva"],
                         "%.2f" % c["total"],
-                        "%.2f" % c["zona_ext"],
-                        "%.2f" % c["guia"],
-                        c["entrega"], c["modo"],
+                        c["modo"], c["entrega"],
                     ])
                 else:
                     w.writerow([

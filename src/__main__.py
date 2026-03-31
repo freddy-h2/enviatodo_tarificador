@@ -10,12 +10,14 @@ Uso:
 
 import argparse
 import sys
+import time
 
 from src.api import EnviaTodoClient
 from src.config import (
     ALTO,
     ANCHO,
     LARGO,
+    PAUSA_ENTRE_ZONAS,
     PESO,
     PESO_VOLUMETRICO,
     ZONAS_CSV,
@@ -139,10 +141,28 @@ def main():
             print("   ⚠️  %s CP %s: usando datos del CSV" % (zona_key, cp))
 
     # ── Cotizar ───────────────────────────────────────────────
-    print("\n💰 Cotizando envíos (esto puede tomar unos minutos)...")
-    resultados = {}
+    total_servicios = len(servicios) * 3
+    print("\n💰 Cotizando envíos (%d peticiones, ~%.0fs estimado)..." % (
+        total_servicios,
+        total_servicios * 1.5 + 2 * PAUSA_ENTRE_ZONAS,
+    ))
 
-    for zona_key in ["Zona A", "Zona B", "Zona C"]:
+    def on_progress(carrier, servicio, resultado):
+        """Callback para mostrar progreso en tiempo real."""
+        if isinstance(resultado, str):
+            # Es un mensaje de reintento
+            print("   🔄 %-10s %-25s → %s" % (carrier, servicio, resultado))
+        elif resultado is not None:
+            print("   ✅ %-10s %-25s → $%8.2f MXN (%s)" % (
+                carrier, servicio, resultado["total"], resultado["modo"],
+            ))
+        else:
+            print("   ❌ %-10s %-25s → Sin cobertura" % (carrier, servicio))
+
+    resultados = {}
+    zona_keys = ["Zona A", "Zona B", "Zona C"]
+
+    for i, zona_key in enumerate(zona_keys):
         z = zonas[zona_key]
         print("\n   ━━━ %s → CP %s (%.1f km) ━━━" % (
             zona_key, z["cp"], z["distancia_km"],
@@ -152,18 +172,13 @@ def main():
             cp_origen, z["cp"],
             datos_origen, datos_destinos[zona_key],
             servicios,
+            on_progress=on_progress,
         )
         resultados[zona_key] = cotizaciones
 
-        for c in cotizaciones:
-            if c["disponible"]:
-                print("   ✅ %-10s %-20s → $%8.2f MXN (%s)" % (
-                    c["carrier"], c["servicio"], c["total"], c["modo"],
-                ))
-            else:
-                print("   ❌ %-10s %-20s → Sin cobertura" % (
-                    c["carrier"], c["servicio"],
-                ))
+        # Pausa entre zonas para no saturar la API
+        if i < len(zona_keys) - 1:
+            time.sleep(PAUSA_ENTRE_ZONAS)
 
     # ── CSV ───────────────────────────────────────────────────
     print("\n📄 Generando CSV...")
@@ -181,7 +196,7 @@ def main():
     print("   Archivo: %s" % ruta_csv)
     print()
 
-    for zona_key in ["Zona A", "Zona B", "Zona C"]:
+    for zona_key in zona_keys:
         z = zonas[zona_key]
         cotizaciones = resultados.get(zona_key, [])
         disponibles = [c for c in cotizaciones if c["disponible"]]
