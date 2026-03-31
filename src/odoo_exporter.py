@@ -4,19 +4,19 @@
 Genera un CSV de delivery carrier de Odoo con precios actualizados por zona,
 listo para importar directamente en Odoo 19.
 
-El formato usa subcampos expandidos para campos relacionales:
-  - ``Reglas de precios/Variable``, ``Reglas de precios/Operador``, etc.
-  - ``Prefijos de C.P./Nombre``
-
-Esto permite que Odoo cree automáticamente los registros hijos
-(delivery.price.rule y delivery.zip.prefix) durante la importación.
+El formato usa:
+  - Subcampos expandidos para One2many (reglas de precio):
+    ``Reglas de precios/Variable``, ``Reglas de precios/Operador``, etc.
+  - Valores separados por coma para Many2many (prefijos de CP):
+    ``Prefijos de C.P.`` con todos los CPs en una sola celda.
 """
 
 import csv
 import os
 import sys
 
-# Increase CSV field size limit for reading compact template (25k+ CPs in one cell)
+# Increase CSV field size limit for reading/writing compact format
+# (25k+ CPs comma-separated in one cell can exceed 131KB default)
 csv.field_size_limit(sys.maxsize)
 
 
@@ -53,11 +53,6 @@ _ODOO_IMPORT_HEADER = [
     "Reglas de precios/Factor variable",
     "Prefijos de C.P.",
 ]
-
-# Columnas vacías para filas de continuación
-_EMPTY_CARRIER = ["", "", "", ""]
-_EMPTY_RULE = ["", "", "", "", "", ""]
-_EMPTY_CP = [""]
 
 
 # ---------------------------------------------------------------------------
@@ -154,19 +149,24 @@ def generar_odoo_csv(
     plantilla_path: str,
     output_path: str,
 ) -> str:
-    """Generate an Odoo delivery carrier import CSV with expanded subfields.
+    """Generate an Odoo delivery carrier import CSV.
 
     Reads the compact template CSV (CPs comma-separated in one cell) and
-    produces a CSV ready for Odoo's import wizard, with expanded columns
-    for One2many (price rules) and Many2many (zip prefixes).
+    produces a CSV ready for Odoo's import wizard:
+
+    - **One2many** (price rules): expanded into subfield columns, one rule
+      per row (12 rows per zone).
+    - **Many2many** (zip prefixes): all CPs comma-separated in a single
+      cell on the first row of each zone.
 
     Output format::
 
-        "Secuencia","Método de entrega","Proveedor","Está publicado",
-        "Reglas de precios/Variable","Reglas de precios/Operador",
-        "Reglas de precios/Valor máximo","Reglas de precios/Precio de venta base",
-        "Reglas de precios/Precio de venta","Reglas de precios/Factor variable",
-        "Prefijos de C.P."
+        "Secuencia","Método de entrega",...,"Reglas de precios/Variable",
+        "Reglas de precios/Operador",...,"Prefijos de C.P."
+        "10","Envío a domicilio - Zona A","Por reglas","True",
+        "weight","<=","20.00","137.88","0.00","weight","01000,01010,..."
+        "","","","","weight","<=","40.00","275.76","0.00","weight",""
+        ... (10 more rule rows with empty CP column)
 
     Args:
         precios_por_zona: dict from leer_cotizacion(), e.g.::
@@ -206,36 +206,24 @@ def generar_odoo_csv(
         zona_nombre = "Zona " + zone["name"].split("Zona ")[-1].strip()
         precio_base = precios_por_zona[zona_nombre]["precio_base"]
         rules = _generate_price_rules(precio_base)
-        cps = zone["cps"]
+        cps_joined = ",".join(zone["cps"])
 
-        # Number of rows = max(rules, cps)
-        num_rows = max(len(rules), len(cps))
-
-        for i in range(num_rows):
-            # Carrier columns: only on first row
+        for i, rule in enumerate(rules):
             if i == 0:
+                # First row: carrier info + first rule + ALL CPs comma-separated
                 carrier_cols = [
                     zone["seq"],
                     zone["name"],
                     zone["provider"],
                     zone["published"],
                 ]
+                cp_col = cps_joined
             else:
-                carrier_cols = list(_EMPTY_CARRIER)
+                # Continuation rows: empty carrier + rule + empty CP
+                carrier_cols = ["", "", "", ""]
+                cp_col = ""
 
-            # Rule columns
-            if i < len(rules):
-                rule_cols = list(rules[i])
-            else:
-                rule_cols = list(_EMPTY_RULE)
-
-            # CP column
-            if i < len(cps):
-                cp_cols = [cps[i]]
-            else:
-                cp_cols = list(_EMPTY_CP)
-
-            output_rows.append(carrier_cols + rule_cols + cp_cols)
+            output_rows.append(carrier_cols + list(rule) + [cp_col])
 
     # Write output
     with open(output_path, "w", newline="", encoding="utf-8") as f_out:

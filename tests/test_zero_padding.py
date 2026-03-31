@@ -12,7 +12,7 @@ import tempfile
 
 import pytest
 
-# Increase CSV field size limit for compact template (25k+ CPs in one cell)
+# Increase CSV field size limit for compact format (25k+ CPs in one cell)
 csv.field_size_limit(sys.maxsize)
 
 
@@ -35,11 +35,12 @@ _COL_CP = 10  # "Prefijos de C.P."
 # ---------------------------------------------------------------------------
 
 
-def _extract_cps_from_odoo_import_csv(csv_path: str) -> list:
-    """Extract all individual CPs from an Odoo import CSV.
+def _extract_cps_from_odoo_csv(csv_path: str) -> list:
+    """Extract all individual CPs from an Odoo CSV (compact or import format).
 
-    In the import format, each CP is on its own row in the
-    "Prefijos de C.P." column (index 10).
+    Handles both:
+    - Compact format: CPs comma-separated in one cell
+    - Import format: CPs comma-separated in one cell on zone header row
 
     Returns:
         list[str]: All individual CP strings found.
@@ -49,9 +50,15 @@ def _extract_cps_from_odoo_import_csv(csv_path: str) -> list:
         reader = csv.reader(f)
         next(reader)  # skip header
         for row in reader:
-            cp = row[_COL_CP].strip() if len(row) > _COL_CP else ""
-            if cp:
-                all_cps.append(cp)
+            cell = row[_COL_CP].strip() if len(row) > _COL_CP else ""
+            if not cell:
+                # Try column 6 (compact template format)
+                cell = row[6].strip() if len(row) > 6 else ""
+            if cell:
+                for cp in cell.split(","):
+                    cp = cp.strip()
+                    if cp:
+                        all_cps.append(cp)
     return all_cps
 
 
@@ -402,7 +409,7 @@ class TestOdooExporterImportFormat:
     """Verifica que el exportador genera CSV en formato de importación Odoo."""
 
     def test_export_has_correct_header(self):
-        """El CSV exportado tiene las columnas de subcampos expandidos."""
+        """El CSV tiene subcampos expandidos para reglas y campo directo para CPs."""
         if not os.path.exists(ODOO_TEMPLATE):
             pytest.skip("Plantilla Odoo no encontrada")
 
@@ -429,11 +436,13 @@ class TestOdooExporterImportFormat:
             assert "Reglas de precios/Valor máximo" in header
             assert "Reglas de precios/Precio de venta base" in header
             assert "Prefijos de C.P." in header
+            # Must NOT have /Nombre suffix
+            assert "Prefijos de C.P./Nombre" not in header
         finally:
             os.unlink(tmp_path)
 
-    def test_export_first_row_has_carrier_and_rule_and_cp(self):
-        """La primera fila de cada zona tiene carrier + regla + CP."""
+    def test_export_cps_comma_separated_in_first_row(self):
+        """Los CPs van todos separados por coma en la primera fila de cada zona."""
         if not os.path.exists(ODOO_TEMPLATE):
             pytest.skip("Plantilla Odoo no encontrada")
 
@@ -454,32 +463,38 @@ class TestOdooExporterImportFormat:
             with open(tmp_path, newline="", encoding="utf-8") as f:
                 reader = csv.reader(f)
                 next(reader)  # skip header
-                first_row = next(reader)
 
-            # Carrier fields
-            assert first_row[0] == "10"  # Secuencia
-            assert "Zona A" in first_row[1]  # Método de entrega
-            # Rule fields
-            assert first_row[4] == "weight"  # Variable
-            assert first_row[5] == "<="  # Operador
-            assert first_row[6] == "20.00"  # Valor máximo
-            assert first_row[7] == "100.00"  # Precio base
-            # CP field
-            assert len(first_row[10]) == 5  # CP con 5 dígitos
+                zones_with_cps = 0
+                for row in reader:
+                    nombre = row[1].strip()
+                    cp_cell = row[_COL_CP].strip() if len(row) > _COL_CP else ""
+
+                    if "Zona" in nombre:
+                        # Zone header row must have CPs
+                        assert "," in cp_cell, (
+                            "%s: CPs should be comma-separated, got: %s..."
+                            % (nombre, cp_cell[:50])
+                        )
+                        zones_with_cps += 1
+                    elif cp_cell:
+                        # Non-header rows must NOT have CPs
+                        pytest.fail("CP found in non-header row: %s" % cp_cell[:50])
+
+            assert zones_with_cps == 3
         finally:
             os.unlink(tmp_path)
 
-    def test_export_cps_all_have_5_digits(self):
-        """Todos los CPs en la exportación tienen exactamente 5 dígitos."""
+    def test_export_compact_output(self):
+        """La exportación tiene formato compacto (< 50 filas)."""
         if not os.path.exists(ODOO_TEMPLATE):
             pytest.skip("Plantilla Odoo no encontrada")
 
         from src.odoo_exporter import generar_odoo_csv
 
         precios = {
-            "Zona A": {"precio_base": 137.88},
-            "Zona B": {"precio_base": 150.00},
-            "Zona C": {"precio_base": 200.00},
+            "Zona A": {"precio_base": 100.00},
+            "Zona B": {"precio_base": 200.00},
+            "Zona C": {"precio_base": 300.00},
         }
 
         with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as f:
@@ -488,14 +503,11 @@ class TestOdooExporterImportFormat:
         try:
             generar_odoo_csv(precios, ODOO_TEMPLATE, tmp_path)
 
-            all_cps = _extract_cps_from_odoo_import_csv(tmp_path)
-            assert len(all_cps) > 0
+            with open(tmp_path, newline="", encoding="utf-8") as f:
+                total_rows = sum(1 for _ in f)
 
-            short_cps = [cp for cp in all_cps if cp.isdigit() and len(cp) != 5]
-            assert not short_cps, "CPs sin 5 dígitos (%d): %s" % (
-                len(short_cps),
-                short_cps[:10],
-            )
+            # 1 header + 3 zones × 12 rules = 37 rows
+            assert total_rows == 37, "Expected 37 rows, got %d" % total_rows
         finally:
             os.unlink(tmp_path)
 
@@ -537,6 +549,36 @@ class TestOdooExporterImportFormat:
 
             for zone, count in rules_per_zone.items():
                 assert count == 12, "%s tiene %d reglas, esperadas 12" % (zone, count)
+        finally:
+            os.unlink(tmp_path)
+
+    def test_export_cps_all_have_5_digits(self):
+        """Todos los CPs en la exportación tienen exactamente 5 dígitos."""
+        if not os.path.exists(ODOO_TEMPLATE):
+            pytest.skip("Plantilla Odoo no encontrada")
+
+        from src.odoo_exporter import generar_odoo_csv
+
+        precios = {
+            "Zona A": {"precio_base": 137.88},
+            "Zona B": {"precio_base": 150.00},
+            "Zona C": {"precio_base": 200.00},
+        }
+
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as f:
+            tmp_path = f.name
+
+        try:
+            generar_odoo_csv(precios, ODOO_TEMPLATE, tmp_path)
+
+            all_cps = _extract_cps_from_odoo_csv(tmp_path)
+            assert len(all_cps) > 0
+
+            short_cps = [cp for cp in all_cps if cp.isdigit() and len(cp) != 5]
+            assert not short_cps, "CPs sin 5 dígitos (%d): %s" % (
+                len(short_cps),
+                short_cps[:10],
+            )
         finally:
             os.unlink(tmp_path)
 
