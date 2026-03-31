@@ -8,6 +8,18 @@ from datetime import datetime
 from src.config import ALTO, ANCHO, LARGO, OUTPUT_DIR, PESO, PESO_VOLUMETRICO
 
 
+def _format_cp(cp) -> str:
+    """Zero-pad a postal code to 5 digits.
+
+    Args:
+        cp: Postal code as int or str.
+
+    Returns:
+        str: Postal code zero-padded to exactly 5 characters.
+    """
+    return str(cp).strip().zfill(5)
+
+
 def generar_csv(cp_origen, zonas, resultados):
     """Genera el CSV de cotizaciones en output/.
 
@@ -35,7 +47,7 @@ def generar_csv(cp_origen, zonas, resultados):
         w.writerow([])
 
         # Datos del paquete
-        w.writerow(["CP Origen", cp_origen])
+        w.writerow(["CP Origen", _format_cp(cp_origen)])
         w.writerow(["Largo (cm)", LARGO])
         w.writerow(["Ancho (cm)", ANCHO])
         w.writerow(["Alto (cm)", ALTO])
@@ -44,17 +56,30 @@ def generar_csv(cp_origen, zonas, resultados):
         w.writerow([])
 
         # Tabla de cotizaciones
-        w.writerow([
-            "Zona", "CP más lejano", "Distancia (km)", "Ubicación",
-            "Paquetería", "Servicio", "Vía",
-            "Cargo guía", "Cargo zona extendida",
-            "Subtotal (MXN)", "IVA (MXN)", "Total (MXN)",
-            "Modo entrega", "Entrega estimada",
-        ])
+        w.writerow(
+            [
+                "Zona",
+                "CP más lejano",
+                "Distancia (km)",
+                "Ubicación",
+                "Paquetería",
+                "Servicio",
+                "Vía",
+                "Cargo guía",
+                "Cargo zona extendida",
+                "Subtotal (MXN)",
+                "IVA (MXN)",
+                "Total (MXN)",
+                "Modo entrega",
+                "Entrega estimada",
+            ]
+        )
 
         for zona_key in ["Zona A", "Zona B", "Zona C"]:
             zona_data = zonas.get(zona_key, {})
-            cp = zona_data.get("cp", "—")
+            cp_raw = zona_data.get("cp", "—")
+            # Aplicar zero-padding solo si parece un CP numérico
+            cp = _format_cp(cp_raw) if str(cp_raw).strip().isdigit() else cp_raw
             dist = zona_data.get("distancia_km", 0)
             ubicacion = "%s, %s, %s" % (
                 zona_data.get("colonia", ""),
@@ -66,27 +91,42 @@ def generar_csv(cp_origen, zonas, resultados):
 
             for i, c in enumerate(cotizaciones):
                 if c["disponible"]:
-                    w.writerow([
-                        zona_label if i == 0 else "",
-                        cp if i == 0 else "",
-                        dist if i == 0 else "",
-                        ubicacion if i == 0 else "",
-                        c["carrier"], c["servicio"], c["via"],
-                        "%.2f" % c["guia"],
-                        "%.2f" % c["zona_ext"],
-                        "%.2f" % c["subtotal"],
-                        "%.2f" % c["iva"],
-                        "%.2f" % c["total"],
-                        c["modo"], c["entrega"],
-                    ])
+                    w.writerow(
+                        [
+                            zona_label if i == 0 else "",
+                            cp if i == 0 else "",
+                            dist if i == 0 else "",
+                            ubicacion if i == 0 else "",
+                            c["carrier"],
+                            c["servicio"],
+                            c["via"],
+                            "%.2f" % c["guia"],
+                            "%.2f" % c["zona_ext"],
+                            "%.2f" % c["subtotal"],
+                            "%.2f" % c["iva"],
+                            "%.2f" % c["total"],
+                            c["modo"],
+                            c["entrega"],
+                        ]
+                    )
                 else:
-                    w.writerow([
-                        zona_label if i == 0 else "",
-                        cp if i == 0 else "",
-                        dist if i == 0 else "",
-                        ubicacion if i == 0 else "",
-                        c["carrier"], c["servicio"], c["via"],
-                        "Sin cobertura", "—", "—", "—", "—", "—", "—",
-                    ])
+                    w.writerow(
+                        [
+                            zona_label if i == 0 else "",
+                            cp if i == 0 else "",
+                            dist if i == 0 else "",
+                            ubicacion if i == 0 else "",
+                            c["carrier"],
+                            c["servicio"],
+                            c["via"],
+                            "Sin cobertura",
+                            "—",
+                            "—",
+                            "—",
+                            "—",
+                            "—",
+                            "—",
+                        ]
+                    )
 
     return ruta
