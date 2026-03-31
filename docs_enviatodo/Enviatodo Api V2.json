@@ -1,0 +1,1276 @@
+{
+	"info": {
+		"_postman_id": "1327c20e-3eb2-463d-823a-778912983980",
+		"name": "Enviatodo Api V2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8936727"
+	},
+	"item": [
+		{
+			"name": "Codigo Postal",
+			"item": [
+				{
+					"name": "Obtener CodigoPostal",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}Api/get_zip_code/64764",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_zip_code",
+								"64764"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Saldo",
+			"item": [
+				{
+					"name": "Obtener Saldo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/get_client_balance",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_client_balance"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Direcciones",
+			"item": [
+				{
+					"name": "Agregar/Editar Direccion",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"lat\": \"0\",\n    \"lng\": \"0\",\n    \"address_type_id\": \"1\",\n    \"full_name\": \"Cesar Alexis Fajardo Flores\",\n    \"email\": \"cesaralexisff07@gmail.com\",\n    \"telephone\": \"4921952109\",\n    \"street\": \"Fransico Zarco\",\n    \"ext_number\": \"940\",\n    \"int_number\": \"\",\n    \"zip_code\": \"64000\",\n    \"suburb\": \"Monterrey Centro\",\n    \"municipality\": \"Monterrey\",\n    \"town\": \"Monterrey\",\n    \"state\": \"Nuevo León\",\n    \"state_code\": \"NL\",\n    \"country_code\": \"MX\",\n    \"reference\": \"Casa blanca12\",\n    \"default_addr\": \"false\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/add_address",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"add_address"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener lista de direcciones",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/get_address",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_address"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener dirección por id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/get_address_by_id/17638",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_address_by_id",
+								"17638"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener direcciones por tipo de dirección",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-client",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/get_address_by_type_id/1",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_address_by_type_id",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Borrar dirección",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/delete_address_by_id/1761555",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"delete_address_by_id",
+								"1761555"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Paquetes",
+			"item": [
+				{
+					"name": "Agregar/Editar paquetes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"caja chica\",\n    \"product_type\": \"47131900\",\n    \"unit_type\": \"XBX\",\n    \"package_content\": \"PLAYERAS\",\n    \"amount_pkg\": \"150\",\n    \"height\": 13,\n    \"width\": 11,\n    \"length\": 10,\n    \"weight\": 1,\n    \"real_weight\": \"1.00\",\n    \"volumetric_weight\": \"0.22\",\n    \"bill_weight\": \"1.00\",\n    \"default_pkg\": \"false\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/add_package/",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"add_package",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener lista de paquetes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/get_packages",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_packages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener paquete por id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/get_package_by_id/502",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_package_by_id",
+								"502"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Borrar paquete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/delete_package/501",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"delete_package",
+								"501"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Paqueterias",
+			"item": [
+				{
+					"name": "Obtener paqueterias",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/get_parcel_service",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_parcel_service"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Servicios de paqueterias",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/provider_services",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"provider_services"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cotizar",
+			"item": [
+				{
+					"name": "Cotizar con un servicio",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"order\",\n    \"quotes\": {\n        \"shipping_type\": \"1\",\n        \"quantity\": 1,\n        \"provider_service_id\":11,\n        \"origin\": {\n            \"address_type_id\": \"1\",\n            \"full_name\": \"De la Vega\",\n            \"email\": \"test@gmail.com\",\n            \"telephone\": \"5622712210\",\n            \"street\": \"JUAN IGNACIO RAMÓN\",\n            \"ext_number\": \"321\",\n            \"int_number\": \"1A\",\n            \"zip_code\": \"64000\",\n            \"suburb\": \"Monterrey Centro\",\n            \"municipality\": \"Monterrey\",\n            \"town\": \"Monterrey\",\n            \"state\": \"Nuevo León\",\n            \"state_code\": \"NL\",\n            \"country_code\": \"MX\",\n            \"default_addr\": \"1\",\n            \"created_at\": \"2022-06-01 17:50:56\",\n            \"updated_at\": \"2024-03-22 12:41:09\",\n            \"status_id\": \"0\",\n            \"lat\": \"\",\n            \"lng\": \"\",\n            \"reference\": \"-\",\n            \"company\": \"\",\n            \"name\": \"Ricardo\"\n        },\n        \"destination\": {\n            \"address_type_id\": \"2\",\n            \"full_name\": \"ANTONIO\",\n            \"email\": \"prueba@Enviatodo.com\",\n            \"telephone\": \"5611025483\",\n            \"street\": \"PASEO VIOLETAS\",\n            \"ext_number\": \"10\",\n            \"int_number\": \"\",\n            \"zip_code\": \"03300\",\n            \"suburb\": \"Tabachines\",\n            \"municipality\": \"Cuernavaca\",\n            \"town\": \"Cuernavaca\",\n            \"state\": \"Morelos\",\n            \"state_code\": \"MS\",\n            \"country_code\": \"MX\",\n            \"default_addr\": \"1\",\n            \"created_at\": \"2023-02-20 19:34:22\",\n            \"updated_at\": \"2024-03-06 21:20:20\",\n            \"lat\": \"\",\n            \"lng\": \"\",\n            \"reference\": \"-\",\n            \"company\": \"\",\n            \"name\": \"Antonio\"\n        },\n        \"package\": {\n            \"name\": \"\",\n            \"product_type\": \"01010101\",\n            \"unit_type\": \"X1A\",\n            \"package_content\": \"qqq\",\n            \"amount_pkg\": \"20000\",\n            \"height\": 10,\n            \"width\": 10,\n            \"length\": 10,\n            \"weight\": 1,\n            \"id\": \"\",\n            \"package_type_id\": \"1\",\n            \"real_weight\": \"1.00\",\n            \"volumetric_weight\": \"1\",\n            \"bill_weight\": \"1\",\n            \"default_pkg\": \"0\",\n            \"product_quantity\": \"1\"\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/rates_client",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"rates_client"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cotizar con una paqueteía",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"order\",\n    \"quotes\": {\n        \"shipping_type\": \"1\",\n        \"quantity\": 1,\n        \"provider_id\":9,\n        \"origin\": {\n            \"address_type_id\": \"1\",\n            \"full_name\": \"De la Vega\",\n            \"email\": \"test@gmail.com\",\n            \"telephone\": \"5622712210\",\n            \"street\": \"JUAN IGNACIO RAMÓN\",\n            \"ext_number\": \"321\",\n            \"int_number\": \"1A\",\n            \"zip_code\": \"64000\",\n            \"suburb\": \"Monterrey Centro\",\n            \"municipality\": \"Monterrey\",\n            \"town\": \"Monterrey\",\n            \"state\": \"Nuevo León\",\n            \"state_code\": \"NL\",\n            \"country_code\": \"MX\",\n            \"default_addr\": \"1\",\n            \"created_at\": \"2022-06-01 17:50:56\",\n            \"updated_at\": \"2024-03-22 12:41:09\",\n            \"status_id\": \"0\",\n            \"lat\": \"\",\n            \"lng\": \"\",\n            \"reference\": \"-\",\n            \"company\": \"\",\n            \"name\": \"Ricardo\"\n        },\n        \"destination\": {\n            \"address_type_id\": \"2\",\n            \"full_name\": \"ANTONIO\",\n            \"email\": \"prueba@Enviatodo.com\",\n            \"telephone\": \"5611025483\",\n            \"street\": \"PASEO VIOLETAS\",\n            \"ext_number\": \"10\",\n            \"int_number\": \"\",\n            \"zip_code\": \"03300\",\n            \"suburb\": \"Tabachines\",\n            \"municipality\": \"Cuernavaca\",\n            \"town\": \"Cuernavaca\",\n            \"state\": \"Morelos\",\n            \"state_code\": \"MS\",\n            \"country_code\": \"MX\",\n            \"default_addr\": \"1\",\n            \"created_at\": \"2023-02-20 19:34:22\",\n            \"updated_at\": \"2024-03-06 21:20:20\",\n            \"lat\": \"\",\n            \"lng\": \"\",\n            \"reference\": \"-\",\n            \"company\": \"\",\n            \"name\": \"Antonio\"\n        },\n        \"package\": {\n            \"name\": \"\",\n            \"product_type\": \"01010101\",\n            \"unit_type\": \"X1A\",\n            \"package_content\": \"qqq\",\n            \"amount_pkg\": \"20000\",\n            \"height\": 10,\n            \"width\": 10,\n            \"length\": 10,\n            \"weight\": 1,\n            \"id\": \"\",\n            \"package_type_id\": \"1\",\n            \"real_weight\": \"1.00\",\n            \"volumetric_weight\": \"1\",\n            \"bill_weight\": \"1\",\n            \"default_pkg\": \"0\",\n            \"product_quantity\": \"1\"\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/rates_client",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"rates_client"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cotizar con todas las paqueterias",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"order\",\n    \"quotes\": {\n        \"shipping_type\": \"1\",\n        \"quantity\": 1,\n        \"origin\": {\n            \"address_type_id\": \"1\",\n            \"full_name\": \"De la Vega\",\n            \"email\": \"test@gmail.com\",\n            \"telephone\": \"5622712210\",\n            \"street\": \"JUAN IGNACIO RAMÓN\",\n            \"ext_number\": \"321\",\n            \"int_number\": \"1A\",\n            \"zip_code\": \"64000\",\n            \"suburb\": \"Monterrey Centro\",\n            \"municipality\": \"Monterrey\",\n            \"town\": \"Monterrey\",\n            \"state\": \"Nuevo León\",\n            \"state_code\": \"NL\",\n            \"country_code\": \"MX\",\n            \"default_addr\": \"1\",\n            \"created_at\": \"2022-06-01 17:50:56\",\n            \"updated_at\": \"2024-03-22 12:41:09\",\n            \"status_id\": \"0\",\n            \"lat\": \"\",\n            \"lng\": \"\",\n            \"reference\": \"-\",\n            \"company\": \"\",\n            \"name\": \"Ricardo\"\n        },\n        \"destination\": {\n            \"address_type_id\": \"2\",\n            \"full_name\": \"ANTONIO\",\n            \"email\": \"prueba@Enviatodo.com\",\n            \"telephone\": \"5611025483\",\n            \"street\": \"PASEO VIOLETAS\",\n            \"ext_number\": \"10\",\n            \"int_number\": \"\",\n            \"zip_code\": \"03300\",\n            \"suburb\": \"Tabachines\",\n            \"municipality\": \"Cuernavaca\",\n            \"town\": \"Cuernavaca\",\n            \"state\": \"Morelos\",\n            \"state_code\": \"MS\",\n            \"country_code\": \"MX\",\n            \"default_addr\": \"1\",\n            \"created_at\": \"2023-02-20 19:34:22\",\n            \"updated_at\": \"2024-03-06 21:20:20\",\n            \"lat\": \"\",\n            \"lng\": \"\",\n            \"reference\": \"-\",\n            \"company\": \"\",\n            \"name\": \"Antonio\"\n        },\n        \"package\": {\n            \"name\": \"\",\n            \"product_type\": \"01010101\",\n            \"unit_type\": \"X1A\",\n            \"package_content\": \"qqq\",\n            \"amount_pkg\": \"20000\",\n            \"height\": 10,\n            \"width\": 10,\n            \"length\": 10,\n            \"weight\": 1,\n            \"id\": \"\",\n            \"package_type_id\": \"1\",\n            \"real_weight\": \"1.00\",\n            \"volumetric_weight\": \"1\",\n            \"bill_weight\": \"1\",\n            \"default_pkg\": \"0\",\n            \"product_quantity\": \"1\"\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/rates_client",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"rates_client"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ordenes",
+			"item": [
+				{
+					"name": "Crear orden",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"order\": {\n        \"type\": \"create_order\",\n        \"data\": {\n            \"uuid\": \"e1c3896a-2e71-485f-a729-7c21ff96fea7\",\n            \"detail\": {\n                \"provider_id\": \"9\",\n                \"provider_service_id\": \"11\",\n                \"insurance\": false\n            }\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/create_order",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"create_order"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancelar Orden",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"tracking_ids\": [\r\n    \"300000000011270006IT89\"\r\n  ],\r\n  \"date\": {\r\n    \"cancelled_at\": \"2025-02-27T17:23:42\",\r\n    \"refunded_at\": \"2025-03-04T17:23:42\"\r\n  },\r\n  \"reason\": {\r\n    \"value\": \"7\",\r\n    \"text\": \"Esta guía se generó como prueba y no se pretende utilizar\"\r\n  },\r\n  \"order_type\": \"rates\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/cancel_order",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"cancel_order"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Descargar Guías",
+			"item": [
+				{
+					"name": "Descargar Guías",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"guides\": [\n        2055848\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/download_guides",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"download_guides"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Descargar Guías Binaries",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"guides\": [\n        1309085\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/download_guide_binaries",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"download_guide_binaries"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Historial ordenes",
+			"item": [
+				{
+					"name": "Usuarios con transacciones",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/user_transactions",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"user_transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Historial de ordenes",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}Api/get_orders",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Historial de ordenes con filtro",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"date_range\":{\"start\":\"2024-03-28\",\"end\":\"2024-03-30\"},\"provider\":\"all\",\"status\":\"all\",\"user_id\":\"all\"}"
+						},
+						"url": {
+							"raw": "{{url}}Api/get_orders_filter",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_orders_filter"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Recolecciones",
+			"item": [
+				{
+					"name": "Obtener recolecciones por cliente",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"providers\":[\"1\"]}"
+						},
+						"url": {
+							"raw": "{{url}}Api/get_orders_for_pickup_by_client_id",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_orders_for_pickup_by_client_id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Agregar recoleccion",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"who_delivers\": \"Oswaldo Vazquez\",\n    \"contact_phone\": \"8888888888\",\n    \"data\": [\n        {\n            \"trx_id\": \"426855\",\n            \"origin_address\": \"Fransico Zarco, 940, , Monterrey Centro, Monterrey, Nuevo León, 64000, MX\"\n        }\n    ],\n    \"pickup_date\": \"2023-07-30 06:13 pm\",\n    \"pickup_place\": 2,\n    \"pickup_place_data\": \"OFICINA\",\n    \"origin\": \"Fransico Zarco, 940, , Monterrey Centro, Monterrey, Nuevo León, 64000, MX\",\n    \"provider_id\": \"1\",\n    \"description_reference\": \"prueba\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/add_pickup",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"add_pickup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancelar recolecciones",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id_recollection\": 29114,\n    \"cancel_description\": \"No utilizaré la guía\",\n    \"user_id\": \"1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}Api/cancel_pickup",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"cancel_pickup"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Catalogos",
+			"item": [
+				{
+					"name": "Catalogo tipo de producto",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/get_catalog/pts",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_catalog",
+								"pts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Catalogo tipo de paquete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "enviatodo",
+								"type": "text"
+							},
+							{
+								"key": "x-enviatodo-app",
+								"value": "custom",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}Api/get_catalog/pkt",
+							"host": [
+								"{{url}}Api"
+							],
+							"path": [
+								"get_catalog",
+								"pkt"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,33 @@
+Cotizaciones EnviaTodo por Zona — Custer Boots
+Fecha de cotización,2026-03-30 20:44:56
+Fuente,API EnviaTodo v2 (rates_client)
+
+CP Origen,37000
+Largo (cm),44
+Ancho (cm),33
+Alto (cm),11
+Peso (kg),1.9
+Peso volumétrico (kg),3.19
+
+Zona,CP más lejano,Distancia (km),Ubicación,Paquetería,Servicio,Vía,Subtotal (MXN),IVA (MXN),Total (MXN),Cargo zona extendida,Cargo guía,Entrega estimada,Modo entrega
+A,33997,999.8,"San Isidro, Coronado, Chihuahua",DHL,DHL,AEREO,480.14,76.82,556.96,164.00,316.14,2026-03-30 08:03:58,En domicilio
+,,,,DHL,ECONOMY SELECT DOMESTIC,TERRESTRE,384.71,61.55,446.26,164.00,220.71,2026-04-06 12:04:00,En domicilio
+,,,,SENDEX,SENDEX - Terrestre,TERRESTRE,Sin cobertura,—,—,—,—,—,—
+,,,,ESTAFETA,ESTAFETA - Aéreo,AEREO,Sin cobertura,—,—,—,—,—,—
+,,,,ESTAFETA,ESTAFETA - Terrestre,TERRESTRE,Sin cobertura,—,—,—,—,—,—
+,,,,ESTAFETA,ESTAFETA - TERRESTRE,TERRESTRE,Sin cobertura,—,—,—,—,—,—
+,,,,ESTAFETA,ESTAFETA - Metropolitano,TERRESTRE,Sin cobertura,—,—,—,—,—,—
+B,83640,1997.0,"De la Educación, Caborca, Sonora",DHL,DHL,AEREO,480.14,76.82,556.96,164.00,316.14,2026-03-30 08:03:18,En domicilio
+,,,,DHL,ECONOMY SELECT DOMESTIC,TERRESTRE,384.71,61.55,446.26,164.00,220.71,2026-04-06 12:04:00,En domicilio
+,,,,SENDEX,SENDEX - Terrestre,TERRESTRE,Sin cobertura,—,—,—,—,—,—
+,,,,ESTAFETA,ESTAFETA - Aéreo,AEREO,Sin cobertura,—,—,—,—,—,—
+,,,,ESTAFETA,ESTAFETA - Terrestre,TERRESTRE,Sin cobertura,—,—,—,—,—,—
+,,,,ESTAFETA,ESTAFETA - TERRESTRE,TERRESTRE,Sin cobertura,—,—,—,—,—,—
+,,,,ESTAFETA,ESTAFETA - Metropolitano,TERRESTRE,Sin cobertura,—,—,—,—,—,—
+C,23593,3900.4,"Los Pozos, Los Cabos, Baja California Sur",DHL,DHL,AEREO,480.14,76.82,556.96,164.00,316.14,2026-03-30 08:03:38,En domicilio
+,,,,DHL,ECONOMY SELECT DOMESTIC,TERRESTRE,384.71,61.55,446.26,164.00,220.71,2026-04-06 12:04:00,En domicilio
+,,,,SENDEX,SENDEX - Terrestre,TERRESTRE,Sin cobertura,—,—,—,—,—,—
+,,,,ESTAFETA,Dia Sig.,AEREO,338.92,54.23,393.15,140.00,198.92,2026-04-01 12:04:00,En domicilio
+,,,,ESTAFETA,Terrestre,TERRESTRE,258.86,41.42,300.28,140.00,118.86,2026-04-06 12:04:00,En domicilio
+,,,,ESTAFETA,ESTAFETA - TERRESTRE,TERRESTRE,Sin cobertura,—,—,—,—,—,—
+,,,,ESTAFETA,ESTAFETA - Metropolitano,TERRESTRE,Sin cobertura,—,—,—,—,—,—
