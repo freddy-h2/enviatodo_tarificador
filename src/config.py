@@ -4,24 +4,24 @@
 import os
 
 # ── Ficha técnica del producto ────────────────────────────────
-LARGO = 44   # cm
-ANCHO = 33   # cm
-ALTO = 11    # cm
-PESO = 1.9   # kg
+LARGO = 44  # cm
+ANCHO = 33  # cm
+ALTO = 11  # cm
+PESO = 1.9  # kg
 PESO_VOLUMETRICO = round((LARGO * ANCHO * ALTO) / 5000, 2)
 PESO_FACTURADO = max(PESO, PESO_VOLUMETRICO)
 
 # ── API EnviaTodo ─────────────────────────────────────────────
 BASE_URL = "https://apiqav2.enviatodo.mx/index.php/"
-REQUEST_TIMEOUT = 90   # segundos por petición de cotización
-CATALOG_TIMEOUT = 15   # segundos para endpoints de catálogo
+REQUEST_TIMEOUT = 90  # segundos por petición de cotización
+CATALOG_TIMEOUT = 15  # segundos para endpoints de catálogo
 
 # Rate limiting: la API permite 120 req/s, máximo 500 por sesión.
 # Usamos pausas amplias para garantizar respuestas consistentes.
 PAUSA_ENTRE_PETICIONES = 3.0  # segundos entre cada cotización
-PAUSA_ENTRE_ZONAS = 5.0      # segundos entre cada zona
-MAX_REINTENTOS = 3            # reintentos si la API responde OK pero sin rates
-PAUSA_REINTENTO_BASE = 5.0   # segundos base para reintentos (5s, 10s, 15s)
+PAUSA_ENTRE_ZONAS = 5.0  # segundos entre cada zona
+MAX_REINTENTOS = 3  # reintentos si la API responde OK pero sin rates
+PAUSA_REINTENTO_BASE = 5.0  # segundos base para reintentos (5s, 10s, 15s)
 
 API_HEADERS = {
     "x-api-key": "enviatodo",
@@ -34,6 +34,10 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ZONAS_CSV = os.path.join(PROJECT_ROOT, "zonas_custerboots", "37000_cp_mx.csv")
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output")
 ENV_FILE = os.path.join(PROJECT_ROOT, ".env.local")
+ODOO_TEMPLATE_PATH = os.path.join(
+    PROJECT_ROOT, "zonas_custerboots", "37000_odoo_delivery_carrier.csv"
+)
+ODOO_OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output", "odoo")
 
 # ── Zonas válidas ─────────────────────────────────────────────
 ZONAS_VALIDAS = {"Zona A", "Zona B", "Zona C"}
